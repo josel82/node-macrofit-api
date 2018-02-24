@@ -69,7 +69,7 @@ app.get('/entries/rm/:id',(req, res)=>{
   if(!ObjectID.isValid(req.params.id)){
     return res.status(400).send('Invalid ID.');
   }
-  Entry.findByIdAndRemove({_id: req.params.id}).then((result)=>{
+  Entry.findByIdAndRemove(req.params.id).then((result)=>{
     if(!result){
       res.send('Id not found.');
       console.log('Id not found.');
