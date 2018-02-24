@@ -36,6 +36,10 @@ const Entry = mongoose.model('Entry', {
     isImperial: {
       type: Boolean,
       default: false
+    },
+    createdAt: {
+      type:String,
+      required: true
     }
 });
 

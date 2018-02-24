@@ -37,8 +37,9 @@ app.post('/entries',(req, res)=>{
         height: req.body.height,
         activityMult: req.body.activityMult,
         goal: req.body.goal,
-        isImperial: req.body.isImperial
-  })
+        isImperial: req.body.isImperial,
+        createdAt: req.body.createdAt
+  });
   entry.save().then((doc)=>{
     res.send(doc);
   },(err)=>{
