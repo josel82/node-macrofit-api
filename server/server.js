@@ -43,41 +43,37 @@ app.post('/entries',(req, res)=>{
   entry.save().then((doc)=>{
     res.send(doc);
   },(err)=>{
-    res.status(400).send(err);
+    res.status(400).send();
   });
 });
 
 // Retrieves all entries of an specific user
 app.get('/entries/:userId',(req, res)=>{
   if(!ObjectID.isValid(req.params.userId)){
-    return res.status(400).send('Invalid User ID.');
+    return res.status(404).send();
   }
-
   Entry.find({userId:req.params.userId}).then((entries)=>{
     if(!entries){
-      res.send('No Entries found for this user.');
-      console.log('No Entries found for this user.');
-      return;
+      return res.status(404).send();
     }
     res.send({entries});
   },(err)=>{
-    res.status(404).send(err);
+    res.status(400).send();
   })
 });
 
-app.get('/entries/rm/:id',(req, res)=>{
+//Removes entry by ID
+app.delete('/entries/:id',(req, res)=>{
   if(!ObjectID.isValid(req.params.id)){
-    return res.status(400).send('Invalid ID.');
+    return res.status(404).send();
   }
   Entry.findByIdAndRemove(req.params.id).then((result)=>{
     if(!result){
-      res.send('Id not found.');
-      console.log('Id not found.');
-      return;
+      return res.status(404).send();
     }
     res.send({result});
   }, (err)=>{
-    res.status(404).send(err);
+    res.status(400).send();
   });
 });
 
