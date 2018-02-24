@@ -54,12 +54,32 @@ app.get('/entries/:userId',(req, res)=>{
   }
 
   Entry.find({userId:req.params.userId}).then((entries)=>{
+    if(!entries){
+      res.send('No Entries found for this user.');
+      console.log('No Entries found for this user.');
+      return;
+    }
     res.send({entries});
   },(err)=>{
     res.status(404).send(err);
   })
 });
 
+app.get('/entries/rm/:id',(req, res)=>{
+  if(!ObjectID.isValid(req.params.id)){
+    return res.status(400).send('Invalid ID.');
+  }
+  Entry.findByIdAndRemove({_id: req.params.id}).then((result)=>{
+    if(!result){
+      res.send('Id not found.');
+      console.log('Id not found.');
+      return;
+    }
+    res.send({result});
+  }, (err)=>{
+    res.status(404).send(err);
+  });
+});
 
 
 app.listen(port, ()=>{
