@@ -40,6 +40,10 @@ const Entry = mongoose.model('Entry', {
     createdAt: {
       type:String,
       required: true
+    },
+    updatedAt:{
+      type:String,
+      required: true
     }
 });
 
