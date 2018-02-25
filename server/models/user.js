@@ -34,8 +34,12 @@ const UserSchema = new mongoose.Schema({
         }
       }]
     });
+// ===============================  Instance Methods  =======================================
+// Methods inside the method object are instance methods. Therefore we can access
+// this methods via intances of this model. Instance methods get called by individual
+// documents
 
-// Inbuilt Method of Schema class. The return value of this method is used in
+// to JSON is and Inbuilt Instance Method whose return value is used in
 // calls to JSON.stringify(document). The idea here is to overwrite this method
 // so we send only the _id and email properties back to the client
 UserSchema.methods.toJSON = function(){
@@ -43,9 +47,9 @@ UserSchema.methods.toJSON = function(){
   let userObject = user.toObject(); // converts the document into a JavaScript object
 
   return _.pick(userObject, ['_id', 'email']); // select only the specified properties
-}
+};
 
-// This is a custom method that has been added to the Schema before it is compiled
+// This is a instance method that has been added to the Schema before it is compiled
 // into the model. The idea here is to add the functionality for generating JSON
 // Web Tokens.
 UserSchema.methods.generateAuthToken = function(){
@@ -58,7 +62,27 @@ UserSchema.methods.generateAuthToken = function(){
   return user.save().then(()=>{ // saves these configurations and returns a promise with the generated token
     return token;
   })//
-}
+};
+
+// ==================================  Model Methods  =======================================
+// Model methods get called by the models
+
+UserSchema.statics.findByToken = function(token){
+  let User = this;
+  let decoded;
+
+  try{
+    decoded = jwt.verify(token, 'abc123');
+  }catch(e){
+    return Promise.reject();
+  }
+  return User.findOne({
+    '_id': decoded._id,
+    'tokens.token': token,
+    'tokens.access': 'auth'
+  });
+
+};
 
 // ============================  Model  =======================================
 const User = mongoose.model('User', UserSchema);

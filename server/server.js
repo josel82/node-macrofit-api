@@ -27,7 +27,7 @@ const app = express(); //Express App instance
 //===============================================================================================
 //======================================= MIDDLEWARE ============================================
 //===============================================================================================
-
+const {authenticate} = require('./middleware/authenticate');
 //CORS
 // app.use(function(req, res, next) {
 //   res.header("Access-Control-Allow-Origin", "*");
@@ -119,13 +119,13 @@ app.patch('/entries/:id', (req, res)=>{
 //======================================= USERS ROUTES ==========================================
 //===============================================================================================
 
-// POST/
+// POST/=========================================================================================
 
 app.post('/users', (req, res)=>{
   let body = _.pick(req.body, ['email', 'password']);
 
   let user = createUser(body);
-  
+
   user.save().then(()=>{
     return user.generateAuthToken(); //call to custom method which generates auth token. returns a promises with the token
   }).then((token)=>{
@@ -135,7 +135,11 @@ app.post('/users', (req, res)=>{
   });
 });
 
+// GET/=========================================================================================
 
+app.get('/users/me', authenticate, (req, res)=>{
+  res.send(req.user);
+});
 
 
 //===============================================================================================
