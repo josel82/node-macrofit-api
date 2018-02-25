@@ -38,12 +38,11 @@ const Entry = mongoose.model('Entry', {
       default: false
     },
     createdAt: {
-      type:String,
-      required: true
+      type:String
     },
     updatedAt:{
-      type:String,
-      required: true
+      type:String
+
     }
 });
 

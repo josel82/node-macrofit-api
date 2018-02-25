@@ -37,33 +37,28 @@ const app = express(); //Express App instance
 app.use(bodyParser.json()); // it transform the incoming JSON data into a JavaScript Object
 
 //===============================================================================================
-//========================================== ROUTES =============================================
+//===================================== ENTRIES ROUTES ==========================================
 //===============================================================================================
 
-// POST/
+// POST/=========================================================================================
 // Saves a new Entry in the database
 app.post('/entries',(req, res)=>{
-  let entry = new Entry({ // creates an instance of the Entry model and initialises it with the data in the request body
-        userId: req.body.userId,
-        title: req.body.title,
-        gender: req.body.gender,
-        age: req.body.age,
-        weight: req.body.weight,
-        height: req.body.height,
-        activityMult: req.body.activityMult,
-        goal: req.body.goal,
-        isImperial: req.body.isImperial,
-        createdAt: req.body.createdAt,
-        updatedAt: new Date().getTime()
-  });
+  let body = _.pick(req.body, ['userId','title', 'gender', 'age',   // Makes sure the user can only set the selected properties
+                                'weight', 'height', 'activityMult',
+                                'goal' ,'isImperial']);
+
+  let entry = createEntry(body);
+
   entry.save().then((doc)=>{ // insterts the document in the collection
     res.send(doc); // sends the document back to the client
   },(err)=>{ // case something went wrong with the route
     res.status(400).send();//sends a bad request message
+    console.log(err);
   });
 });
 
-// GET/
+
+// GET/=========================================================================================
 // Retrieves all entries of an specific user
 app.get('/entries/:userId',(req, res)=>{
   let userId = req.params.userId; //gets the user id passed as a parameter
@@ -80,7 +75,7 @@ app.get('/entries/:userId',(req, res)=>{
   })
 });
 
-// DELETE/
+// DELETE/=========================================================================================
 // Finds and Removes an entry by ID
 app.delete('/entries/:id',(req, res)=>{
   let id = req.params.id; //gets the entry id passed as a parameter
@@ -97,7 +92,7 @@ app.delete('/entries/:id',(req, res)=>{
   });
 });
 
-// PATCH/
+// PATCH/=========================================================================================
 // Finds and Updates an entry by ID
 app.patch('/entries/:id', (req, res)=>{
   let id = req.params.id; //gets the entry id passed as a parameter
@@ -120,7 +115,67 @@ app.patch('/entries/:id', (req, res)=>{
   });
 });
 
+//===============================================================================================
+//======================================= USERS ROUTES ==========================================
+//===============================================================================================
 
-app.listen(port, ()=>{
+// POST/
+
+app.post('/users', (req, res)=>{
+  let body = _.pick(req.body, ['email', 'password']);
+
+  let user = createUser(body);
+  
+  user.save().then(()=>{
+    return user.generateAuthToken(); //call to custom method which generates auth token. returns a promises with the token
+  }).then((token)=>{
+    res.header('x-auth', token).send(user); // inserts the token in the header and sends it back to the client
+  }).catch((err)=>{
+    res.status(400).send(err);
+  });
+});
+
+
+
+
+//===============================================================================================
+//========================================== Listener ===========================================
+//===============================================================================================
+app.listen(port, ()=>{ //"Starts a UNIX socket and listens for connections on the given path"
   console.log('Started on port 3000');
-})
+});
+
+
+//===============================================================================================
+//========================================+== Methods ===========================================
+//===============================================================================================
+
+// Returns an instace of the User Model initialized with the data in the response body
+let createUser = (body)=>{
+  return new User({
+    email: body.email,
+    password: body.password,
+    tokens: {
+      access: 'auth',
+      token: '3543d32423523523'
+    }
+  });
+};
+
+// Returns an instance of the Entry model initialized with the data in the request body
+let createEntry = (body) => {
+  let date = new Date().getTime();
+  return new Entry({
+        userId: body.userId,
+        title: body.title,
+        gender: body.gender,
+        age: body.age,
+        weight: body.weight,
+        height: body.height,
+        activityMult: body.activityMult,
+        goal: body.goal,
+        isImperial: body.isImperial,
+        createdAt: date,
+        updatedAt: date
+  });
+};
