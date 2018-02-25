@@ -136,7 +136,7 @@ app.post('/users', (req, res)=>{
 });
 
 // GET/=========================================================================================
-
+// USER AUTHENTICATION  uses "authenticate" custom middeware
 app.get('/users/me', authenticate, (req, res)=>{
   res.send(req.user);
 });

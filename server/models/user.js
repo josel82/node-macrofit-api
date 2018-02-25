@@ -2,6 +2,7 @@ const mongoose = require('mongoose');   //Mongoose Library
 const validator = require('validator'); //Library for creating custom validators
 const jwt = require('jsonwebtoken');    //JWT Library for generating JSON Web Tokens
 const _ = require('lodash');            // Utility functions for JavaScript
+const bcrypt = require('bcryptjs');
 
 // ============================  Schema  =======================================
 //Firt we define our user schema. This define the shape of the documents stored
@@ -34,7 +35,29 @@ const UserSchema = new mongoose.Schema({
         }
       }]
     });
-// ===============================  Instance Methods  =======================================
+
+// ================================  Mongoose Middleware  ====================================
+// These will run at a specified moment in the Document's life. And will be triggerd by a given event
+
+UserSchema.pre('save', function(next){ //these middleware will run before the document is saved in the database
+  let user = this; //refers to the document
+
+  if(user.isModified('password')){ //check if the password has been modified
+
+    let hashed = bcrypt.genSalt(10, (err, salt)=>{ //generates salt
+      bcrypt.hash(user.password, salt, (err, hash)=>{ // hashes the paswword
+        user.password = hash; // set the password property with the hash value
+        next(); // completes the middleware;
+      });
+    });
+  }else{
+    next(); // completes the middleware;
+  }
+});
+
+
+
+// ===============================  Instance Methods  ========================================
 // Methods inside the method object are instance methods. Therefore we can access
 // this methods via intances of this model. Instance methods get called by individual
 // documents
@@ -68,15 +91,15 @@ UserSchema.methods.generateAuthToken = function(){
 // Model methods get called by the models
 
 UserSchema.statics.findByToken = function(token){
-  let User = this;
-  let decoded;
+  let User = this; //Refers to the Model
+  let decoded; //declares variable
 
   try{
-    decoded = jwt.verify(token, 'abc123');
+    decoded = jwt.verify(token, 'abc123'); //verifies the token. case is valid it sets the variable "decoded" with this value
   }catch(e){
-    return Promise.reject();
+    return Promise.reject(); // throws error in case the token is invalid
   }
-  return User.findOne({
+  return User.findOne({ // returns a promise which finds the authenticated user.
     '_id': decoded._id,
     'tokens.token': token,
     'tokens.access': 'auth'
