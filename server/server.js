@@ -72,7 +72,7 @@ app.get('/entries/:userId',(req, res)=>{
     res.send({entries}); //case there are entries it sends them back to the client
   },(err)=>{ // case there's something wrong with the route
     res.status(400).send(); //sends a bad request message
-  })
+  });
 });
 
 // DELETE/=========================================================================================
@@ -120,7 +120,7 @@ app.patch('/entries/:id', (req, res)=>{
 //===============================================================================================
 
 // POST/=========================================================================================
-
+// USER SIGN UP
 app.post('/users', (req, res)=>{
   let body = _.pick(req.body, ['email', 'password']);
 
@@ -130,6 +130,20 @@ app.post('/users', (req, res)=>{
     return user.generateAuthToken(); //call to custom method which generates auth token. returns a promises with the token
   }).then((token)=>{
     res.header('x-auth', token).send(user); // inserts the token in the header and sends it back to the client
+  }).catch((err)=>{
+    res.status(400).send(err);
+  });
+});
+
+// POST/=========================================================================================
+// USER LOG IN
+app.post('/users/login', (req, res)=>{
+  let body =_.pick(req.body, ['email', 'password']); //pick only the properties to be used
+
+  User.findByCredentials(body.email, body.password).then((user)=>{ //finds user and verify password
+    return user.generateAuthToken().then((token)=>{ //generates token
+      res.header('x-auth', token).send(user); //sends response with token
+    });
   }).catch((err)=>{
     res.status(400).send(err);
   });
