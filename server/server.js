@@ -74,12 +74,12 @@ app.get('/entries', authenticate, (req, res)=>{
 
 // DELETE/=========================================================================================
 // Finds and Removes an entry by ID
-app.delete('/entries/:id',(req, res)=>{
+app.delete('/entries/:id', authenticate, (req, res)=>{
   let id = req.params.id; //gets the entry id passed as a parameter
   if(!ObjectID.isValid(id)){ // checks if the id is valid
     return res.status(404).send(); // case the id is not valid it sends a 404 with an empty body
   }
-  Entry.findByIdAndRemove(req.params.id).then((result)=>{ //queries the database searching for a specific entry and removes it
+  Entry.findOneAndRemove({_id: req.params.id, _userId: req.user._id}).then((result)=>{ //queries the database searching for a specific entry and removes it
     if(!result){ // checks if the entry exists
       return res.status(404).send(); // case the entry couldn't be found it sends back a 404 with an empty body
     }
@@ -91,17 +91,16 @@ app.delete('/entries/:id',(req, res)=>{
 
 // PATCH/=========================================================================================
 // Finds and Updates an entry by ID
-app.patch('/entries/:id', (req, res)=>{
-  let id = req.params.id; //gets the entry id passed as a parameter
+app.patch('/entries/:id', authenticate, (req, res)=>{
   let body = _.pick(req.body, ['title', 'gender', 'age',             // Makes sure the user can only update the selected properties
                                 'weight', 'height', 'activityMul',
                                 'goal' ,'isImperial','updatedAt']);
-  if(!ObjectID.isValid(id)){ // checks if the id is valid
+  if(!ObjectID.isValid(req.user.id)){ // checks if the id is valid
     return res.status(404).send(); // case the id is not valid it sends a 404 with an empty body
   }
   body.updatedAt = new Date().getTime(); // sets the updtatedAt property
 
-  Entry.findByIdAndUpdate(id, {$set: body}, {new:true}).then((result)=>{ //Finds and update an Entry by its ID. {new:true} options tell mongoose we want to get the updated document returned
+  Entry.findOneAndUpdate({_id:req.params.id, _userId:req.user.id}, {$set: body}, {new:true}).then((result)=>{ //Finds and update an Entry by its ID. {new:true} options tell mongoose we want to get the updated document returned
 
     if(!result){ // checks if a result comes back
       return res.status(404).send(); // case the entry couldn't be updated it sends back a 404 with an empty body
