@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const Entry = mongoose.model('Entry', {
-    userId:{
-      type: String,
+    _userId:{
+      type: mongoose.Schema.Types.ObjectId,
       required:true
     },
     title: {

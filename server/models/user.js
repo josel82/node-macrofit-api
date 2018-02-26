@@ -39,12 +39,14 @@ const UserSchema = new mongoose.Schema({
 // ================================  Mongoose Middleware  ====================================
 // These will run at a specified moment in the Document's life. And will be triggerd by a given event
 
-UserSchema.pre('save', function(next){ //these middleware will run before the document is saved in the database
+//BEFORE SAVE
+//these middleware will run before the document is saved in the database
+UserSchema.pre('save', function(next){
   let user = this; //refers to the document
 
-  if(user.isModified('password')){ //check if the password has been modified
+  if(user.isModified('password')){ //checks if the password has been modified. Uses Mongoose Instance Method "Document.isModified"
 
-    let hashed = bcrypt.genSalt(10, (err, salt)=>{ //generates salt
+    let hashed = bcrypt.genSalt(10, (err, salt)=>{ //generates salt. Uses bcrypt Library
       bcrypt.hash(user.password, salt, (err, hash)=>{ // hashes the paswword
         user.password = hash; // set the password property with the hash value
         next(); // completes the middleware;
@@ -62,7 +64,7 @@ UserSchema.pre('save', function(next){ //these middleware will run before the do
 // this methods via intances of this model. Instance methods get called by individual
 // documents
 
-// to JSON is and Inbuilt Instance Method whose return value is used in
+// to JSON is a Mongoose Instance Method whose return value is used in
 // calls to JSON.stringify(document). The idea here is to overwrite this method
 // so we send only the _id and email properties back to the client
 UserSchema.methods.toJSON = function(){
@@ -72,13 +74,11 @@ UserSchema.methods.toJSON = function(){
   return _.pick(userObject, ['_id', 'email']); // select only the specified properties
 };
 
-// This is a instance method that has been added to the Schema before it is compiled
-// into the model. The idea here is to add the functionality for generating JSON
-// Web Tokens.
+// Custom Instance Method for generating JSON Web Tokens
 UserSchema.methods.generateAuthToken = function(){
   let user = this; // refers to the document
   let access = 'auth'; // specifies the type of token
-  let token = jwt.sign({ _id : user._id.toHexString(), access}, 'abc123').toString(); //hashing function
+  let token = jwt.sign({ _id : user._id.toHexString(), access}, 'abc123').toString(); //hashing function. Uses jsonwebtoken library
 
   user.tokens = user.tokens.concat([{access, token}]); //pushes the token to the tokens array declared in the schema
 
@@ -86,6 +86,16 @@ UserSchema.methods.generateAuthToken = function(){
     return token;
   })//
 };
+
+//Custom Instance Method used for removing token from a document
+UserSchema.methods.removeToken = function(token){
+  let user = this;// refers to the document
+  return user.update({ //for updating the document
+    $pull:{ // MongoDB $pull operator for removing elements from an array
+      tokens: {token} // in this case we want to remove the token from the tokens array
+    }
+  });
+}
 
 // ==================================  Model Methods  =======================================
 // Model methods get called by the models
@@ -106,20 +116,21 @@ UserSchema.statics.findByToken = function(token){
   });
 };
 
+//Custom Model method used for finding a user and verify if the password passed is valid
 UserSchema.statics.findByCredentials = function(email, password){
-  let User = this;
+  let User = this; // refers to the Model
 
-  return User.findOne({email}).then((user)=>{
-    if(!user){
-      return Promise.reject();
+  return User.findOne({email}).then((user)=>{ // checks if the user exists in the database
+    if(!user){ //case the user is not found
+      return Promise.reject(); //returns a rejected promise
     }
-
-    return new Promise((resolve, reject)=>{
-      bcrypt.compare(password, user.password, (err, res)=>{
-        if(res){
-          resolve(user);
+    // if the user is found
+    return new Promise((resolve, reject)=>{  //returns a promise
+      bcrypt.compare(password, user.password, (err, res)=>{ //validate the password
+        if(res){ // if the password is valid
+          resolve(user); //return the user
         }else{
-          reject(err);
+          reject(err); // reject the promise sending the error
         }
       });
     });

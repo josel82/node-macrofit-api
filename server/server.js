@@ -42,12 +42,12 @@ app.use(bodyParser.json()); // it transform the incoming JSON data into a JavaSc
 
 // POST/=========================================================================================
 // Saves a new Entry in the database
-app.post('/entries',(req, res)=>{
-  let body = _.pick(req.body, ['userId','title', 'gender', 'age',   // Makes sure the user can only set the selected properties
+app.post('/entries', authenticate, (req, res)=>{
+  let body = _.pick(req.body, ['title', 'gender', 'age',   // Makes sure the user can only set the selected properties
                                 'weight', 'height', 'activityMult',
                                 'goal' ,'isImperial']);
-
-  let entry = createEntry(body);
+  let user = req.user;
+  let entry = createEntry(body, user);
 
   entry.save().then((doc)=>{ // insterts the document in the collection
     res.send(doc); // sends the document back to the client
@@ -60,12 +60,9 @@ app.post('/entries',(req, res)=>{
 
 // GET/=========================================================================================
 // Retrieves all entries of an specific user
-app.get('/entries/:userId',(req, res)=>{
-  let userId = req.params.userId; //gets the user id passed as a parameter
-  if(!ObjectID.isValid(userId)){  // checks if the id is valid
-    return res.status(404).send();// case the id is not valid it sends a 404 with an empty body
-  }
-  Entry.find({userId:req.params.userId}).then((entries)=>{ //queries the database searching for entries of a specific user
+app.get('/entries', authenticate, (req, res)=>{
+
+  Entry.find({_userId:req.user.id}).then((entries)=>{ //queries the database searching for entries of a specific user
     if(!entries){ // checks if there are entries for this user
       return res.status(404).send(); // case there're no entries sends back a 404 with an empty body
     }
@@ -124,7 +121,7 @@ app.patch('/entries/:id', (req, res)=>{
 app.post('/users', (req, res)=>{
   let body = _.pick(req.body, ['email', 'password']);
 
-  let user = createUser(body);
+  let user = new User(body);
 
   user.save().then(()=>{
     return user.generateAuthToken(); //call to custom method which generates auth token. returns a promises with the token
@@ -155,6 +152,16 @@ app.get('/users/me', authenticate, (req, res)=>{
   res.send(req.user);
 });
 
+// DELETE/=======================================================================================
+// USER LOG OUT
+app.delete('/users/me/token', authenticate, (req, res)=>{
+
+  req.user.removeToken(req.token).then(()=>{
+    res.status(200).send();
+  },()=>{
+    res.status(400).send();
+  });
+});
 
 //===============================================================================================
 //========================================== Listener ===========================================
@@ -165,26 +172,14 @@ app.listen(port, ()=>{ //"Starts a UNIX socket and listens for connections on th
 
 
 //===============================================================================================
-//========================================+== Methods ===========================================
+//=========================================== Methods ===========================================
 //===============================================================================================
 
-// Returns an instace of the User Model initialized with the data in the response body
-let createUser = (body)=>{
-  return new User({
-    email: body.email,
-    password: body.password,
-    tokens: {
-      access: 'auth',
-      token: '3543d32423523523'
-    }
-  });
-};
-
 // Returns an instance of the Entry model initialized with the data in the request body
-let createEntry = (body) => {
+let createEntry = (body, user) => {
   let date = new Date().getTime();
   return new Entry({
-        userId: body.userId,
+        _userId: user.id,
         title: body.title,
         gender: body.gender,
         age: body.age,
