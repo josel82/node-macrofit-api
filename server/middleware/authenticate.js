@@ -1,10 +1,10 @@
 const {User} = require('../models/user');
 
 let authenticate = (req, res, next)=>{
-  let token = req.header('x-auth'); // store the token in a variable
-  User.findByToken(token).then((user)=>{ //Model Method defined in the User Model
-    if(!user){ // case no user was found reject
-      Promise.reject();
+  let token = req.header('x-auth'); // grab the token from the header
+  User.findByToken(token).then((user)=>{ //User.findByToken returns a promise which resolves to a user
+    if(!user){ // case no user was found
+      Promise.reject(); // reject the promise
     }
     req.user = user; // case the user was found set the user property in the request
                      // onject with the one returned be the Model method

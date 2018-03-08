@@ -61,13 +61,15 @@ app.post('/entries', authenticate, (req, res)=>{
 // GET/=========================================================================================
 // Retrieves all entries of an specific user
 app.get('/entries', authenticate, (req, res)=>{
-
+  if(!req.user){ // checks if the id is valid
+    return res.status(404).send(); // case the id is not valid it sends a 404 with an empty body
+  }
   Entry.find({_userId:req.user.id}).then((entries)=>{ //queries the database searching for entries of a specific user
     if(!entries){ // checks if there are entries for this user
       return res.status(404).send(); // case there're no entries sends back a 404 with an empty body
     }
     res.send({entries}); //case there are entries it sends them back to the client
-  },(err)=>{ // case there's something wrong with the route
+  }).catch((err)=>{ // case there's something wrong with the route
     res.status(400).send(); //sends a bad request message
   });
 });
@@ -75,16 +77,15 @@ app.get('/entries', authenticate, (req, res)=>{
 // DELETE/=========================================================================================
 // Finds and Removes an entry by ID
 app.delete('/entries/:id', authenticate, (req, res)=>{
-  let id = req.params.id; //gets the entry id passed as a parameter
-  if(!ObjectID.isValid(id)){ // checks if the id is valid
-    return res.status(404).send(); // case the id is not valid it sends a 404 with an empty body
+  if(!ObjectID.isValid(req.params.id)|| !req.user){ // checks if the id is valid
+    return res.status(404).send(); // case the id is not valid it sends a 400 with an empty body
   }
   Entry.findOneAndRemove({_id: req.params.id, _userId: req.user._id}).then((result)=>{ //queries the database searching for a specific entry and removes it
     if(!result){ // checks if the entry exists
       return res.status(404).send(); // case the entry couldn't be found it sends back a 404 with an empty body
     }
     res.send({result}); // case the entry was found and deleted, it sends it back to the client
-  }, (err)=>{ // case there's something wrong with the route
+  }).catch((err)=>{ // case there's something wrong with the route
     res.status(400).send(); //sends a bad request message
   });
 });
@@ -163,10 +164,40 @@ app.delete('/users/me/token', authenticate, (req, res)=>{
 });
 
 //===============================================================================================
+//======================================= TEST ROUTES ===========================================
+//===============================================================================================
+
+app.get('/test/entries', (rep, res)=>{
+
+  Entry.find().then((entries)=>{
+    if(!entries){
+      res.status(404).send();
+    }
+    res.send({entries});
+  }).catch((e)=>{
+    res.status(400).send();
+  });
+});
+
+app.get('/test/entries/:id', (req, res)=>{
+  let id = req.params.id;
+  Entry.find({_id:id}).then((entry)=>{
+    if(!entry){
+      res.status(404).send();
+    }
+    res.send({entry});
+  }).catch((e)=>{
+    res.status(400).send();
+  });
+});
+
+
+
+//===============================================================================================
 //========================================== Listener ===========================================
 //===============================================================================================
 app.listen(port, ()=>{ //"Starts a UNIX socket and listens for connections on the given path"
-  console.log('Started on port 3000');
+  console.log(`Started on port ${port}`);
 });
 
 
@@ -191,3 +222,5 @@ let createEntry = (body, user) => {
         updatedAt: date
   });
 };
+
+module.exports = {app};
