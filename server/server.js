@@ -29,11 +29,13 @@ const app = express(); //Express App instance
 //===============================================================================================
 const {authenticate} = require('./middleware/authenticate');
 //CORS
-// app.use(function(req, res, next) {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-//   next();
-// });
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, x-auth");
+  res.header("Access-Control-Expose-Headers", "x-auth");
+  res.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PATCH");
+  next();
+});
 app.use(bodyParser.json()); // it transform the incoming JSON data into a JavaScript Object
 
 //===============================================================================================
@@ -45,7 +47,8 @@ app.use(bodyParser.json()); // it transform the incoming JSON data into a JavaSc
 app.post('/entries', authenticate, (req, res)=>{
   let body = _.pick(req.body, ['title', 'gender', 'age',   // Makes sure the user can only set the selected properties
                                 'weight', 'height', 'activityMult',
-                                'goal' ,'isImperial']);
+                                'goalMult' ,'isImperial']);
+  console.log(body);
   let user = req.user;
   let entry = createEntry(body, user);
 
@@ -216,7 +219,7 @@ let createEntry = (body, user) => {
         weight: body.weight,
         height: body.height,
         activityMult: body.activityMult,
-        goal: body.goal,
+        goalMult: body.goalMult,
         isImperial: body.isImperial,
         createdAt: date,
         updatedAt: date

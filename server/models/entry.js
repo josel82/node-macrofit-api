@@ -29,7 +29,7 @@ const Entry = mongoose.model('Entry', {
       type: Number,
       required: true
     },
-    goal: {
+    goalMult: {
       type: Number,
       required: true
     },
