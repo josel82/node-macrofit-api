@@ -36,7 +36,11 @@ app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Methods", "GET, POST, DELETE, PATCH");
   next();
 });
-app.use(bodyParser.json()); // it transform the incoming JSON data into a JavaScript Object
+// it transform the incoming JSON data into a JavaScript Object
+app.use(bodyParser.json());
+
+
+
 
 //===============================================================================================
 //===================================== ENTRIES ROUTES ==========================================
@@ -45,6 +49,9 @@ app.use(bodyParser.json()); // it transform the incoming JSON data into a JavaSc
 // POST/=========================================================================================
 // Saves a new Entry in the database
 app.post('/entries', authenticate, (req, res)=>{
+  if(!req.user){ // checks if the id is valid
+    return res.status(401).send(); // case the id is not valid it sends a 401 with an empty body
+  }
   let body = _.pick(req.body, ['title', 'gender', 'age',   // Makes sure the user can only set the selected properties
                                 'weight', 'height', 'activityMult',
                                 'goalMult' ,'isImperial']);
@@ -65,7 +72,7 @@ app.post('/entries', authenticate, (req, res)=>{
 // Retrieves all entries of an specific user
 app.get('/entries', authenticate, (req, res)=>{
   if(!req.user){ // checks if the id is valid
-    return res.status(404).send(); // case the id is not valid it sends a 404 with an empty body
+    return res.status(401).send(); // case the id is not valid it sends a 401 with an empty body
   }
   Entry.find({_userId:req.user.id}).then((entries)=>{ //queries the database searching for entries of a specific user
     if(!entries){ // checks if there are entries for this user
@@ -81,7 +88,7 @@ app.get('/entries', authenticate, (req, res)=>{
 // Finds and Removes an entry by ID
 app.delete('/entries/:id', authenticate, (req, res)=>{
   if(!ObjectID.isValid(req.params.id)|| !req.user){ // checks if the id is valid
-    return res.status(404).send(); // case the id is not valid it sends a 400 with an empty body
+    return res.status(401).send(); // case the id is not valid it sends a 401 with an empty body
   }
   Entry.findOneAndRemove({_id: req.params.id, _userId: req.user._id}).then((result)=>{ //queries the database searching for a specific entry and removes it
     if(!result){ // checks if the entry exists
@@ -100,7 +107,7 @@ app.patch('/entries/:id', authenticate, (req, res)=>{
                                 'weight', 'height', 'activityMul',
                                 'goal' ,'isImperial','updatedAt']);
   if(!ObjectID.isValid(req.user.id)){ // checks if the id is valid
-    return res.status(404).send(); // case the id is not valid it sends a 404 with an empty body
+    return res.status(401).send(); // case the id is not valid it sends a 401 with an empty body
   }
   body.updatedAt = new Date().getTime(); // sets the updtatedAt property
 
@@ -131,7 +138,20 @@ app.post('/users', (req, res)=>{
   }).then((token)=>{
     res.header('x-auth', token).send(user); // inserts the token in the header and sends it back to the client
   }).catch((err)=>{
-    res.status(400).send(err);
+      if(err.errors){
+        if(err.errors.password){
+          res.status(400).send({type:'password', message: 'Minimum allowed 6 characters.'});
+        }else if(err.errors.email){
+          res.status(400).send({type:'email', message: 'Invalid email.'});
+        }
+      }else if(err.code){
+        if(err.code == 11000){
+          res.status(400).send({type:'account', message: `User is already registered.`});
+        }
+      }else{
+          res.status(400).send(err);
+      }
+      console.log(err);
   });
 });
 
@@ -145,7 +165,8 @@ app.post('/users/login', (req, res)=>{
       res.header('x-auth', token).send(user); //sends response with token
     });
   }).catch((err)=>{
-    res.status(400).send(err);
+    res.status(400).send({type:'auth', message:'Email or password incorrect.'});
+    console.log(err);
   });
 });
 
@@ -161,8 +182,9 @@ app.delete('/users/me/token', authenticate, (req, res)=>{
 
   req.user.removeToken(req.token).then(()=>{
     res.status(200).send();
-  },()=>{
-    res.status(400).send();
+  },(err)=>{
+    res.status(401).send({type:'credentials', message:'Invalid credentials.'});
+    console.log(err);
   });
 });
 
