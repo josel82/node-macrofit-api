@@ -11,7 +11,7 @@
 	body: {
 		"email":"example@email.com",
 		"password": "passwordMorethan6char"
-	}	
+	}
 ```
 
 #### Response:
@@ -60,8 +60,8 @@
 ```
 #### Errors:
 ```
-Status: 400
-error: { type: "auth", message: " Email or password incorrect."}
+	Status: 400
+	error: { type: "auth", message: " Email or password incorrect."}
 ```
 <br>
 
@@ -76,7 +76,7 @@ error: { type: "auth", message: " Email or password incorrect."}
 #### Description: Logs out an user.
 #### Request:
 ```
-headers:  x-auth: "token"
+	headers:  x-auth: "token"
 ```
 #### Response:
 ```
@@ -121,7 +121,7 @@ headers:  x-auth: "token"
 
 #### Response:
 ```
-Status: 200
+	Status: 200
 	body: {
    	 	"_userId": "5aa26162d79b5c0014282430",
     	"title": "sometitle",
@@ -131,12 +131,12 @@ Status: 200
    	 	"height": 167,
     	"activityMult": 1.55,
    		"goalMult": 1,
-"isImperial": false,
-    	"createdAt": "1521651117407",
-   		"updatedAt": "1521651117407",
-    	"_id": "5ab28dad8bfef2001437acd4",
-   		"__v": 0
-}
+			"isImperial": false,
+			    	"createdAt": "1521651117407",
+			   		"updatedAt": "1521651117407",
+			    	"_id": "5ab28dad8bfef2001437acd4",
+			   		"__v": 0
+			}
 ```
 
 #### Errors:
@@ -148,6 +148,10 @@ Status: 200
 	Empty body
 	Cause: Invalid token.
 ```
+<br>
+
+---
+
 ### GET ENTRIES
 #### Private route
 #### Method: GET
@@ -155,8 +159,8 @@ Status: 200
 #### Description: Retrieves all the entries of an specific user.
 #### Request:
 ```
-	      headers:  Content-Type: application/json
-		    x-auth: "token"
+	 headers:  Content-Type: application/json
+	 x-auth: "token"
 ```
 
 #### Response:
@@ -186,15 +190,15 @@ Status: 200
 ```
 #### Errors:
 ```
-Status: 400   
-Empty body
-Cause: Bad request.
-Status: 401
-Empty body
-Cause: Invalid token.
-Status: 404
-Empty body
-Cause: Couldn’t find any entries.
+	Status: 400   
+	Empty body
+	Cause: Bad request.
+	Status: 401
+	Empty body
+	Cause: Invalid token.
+	Status: 404
+	Empty body
+	Cause: Couldn’t find any entries.
 ```
 <br>
 
@@ -266,8 +270,8 @@ Cause: Couldn’t find any entries.
 #### Description: Deletes an existing entry.
 #### Request:
 ```
-	      headers:  Content-Type: application/json
-		    x-auth: "token"
+	headers:  Content-Type: application/json
+	x-auth: "token"
 
 ```
 #### Response:
