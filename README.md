@@ -23,8 +23,8 @@ This is an API for MacroFit Macro Calculator App. It serves as the backend for b
 #### Response:
 ```
 	status: 200
-  headers:  x-auth: "token"
-  body: {
+  	headers:  x-auth: "token"
+  	body: {
 		"_id":"wefsafhraskfhq785y53t31r4r",
 		"email": " example@email.com "
 	}
@@ -48,7 +48,7 @@ This is an API for MacroFit Macro Calculator App. It serves as the backend for b
 #### Description: Logs in an existing user.
 #### Request:
 ```
-  headers:  Content-Type: application/json
+  	headers:  Content-Type: application/json
 	body: {
 		"email":"example@email.com",
 		"password": "passwordMorethan6char"
@@ -111,8 +111,8 @@ This is an API for MacroFit Macro Calculator App. It serves as the backend for b
 #### Request:
 #### headers:  Content-Type: application/json
 ```
- x-auth: "token"
- body: {
+	x-auth: "token"
+	body: {
 		"title":"sometitle",
 		"gender": "0",
 		"age":"30",
@@ -165,8 +165,8 @@ This is an API for MacroFit Macro Calculator App. It serves as the backend for b
 #### Description: Retrieves all the entries of an specific user.
 #### Request:
 ```
-	 headers:  Content-Type: application/json
-	 x-auth: "token"
+	headers:  Content-Type: application/json
+	x-auth: "token"
 ```
 
 #### Response:
