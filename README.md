@@ -1,3 +1,9 @@
+# MacroFit Calculator API
+
+This is an API for MacroFit Macro Calculator App. It serves as the backend for both the mobile and web version of the application.
+
+## DOCUMENTATION
+
 ## USER ROUTES
 
 ### SIGN UP ROUTE
