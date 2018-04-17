@@ -97,8 +97,8 @@ app.delete('/entries/:id', authenticate, (req, res)=>{
 // Finds and Updates an entry by ID
 app.patch('/entries/:id', authenticate, (req, res)=>{
   let body = _.pick(req.body, ['title', 'gender', 'age',             // Makes sure the user can only update the selected properties
-                                'weight', 'height', 'activityMul',
-                                'goal' ,'isImperial','updatedAt']);
+                                'weight', 'height', 'activityMult',
+                                'goalMult' ,'isImperial','updatedAt']);
   if(!ObjectID.isValid(req.user.id)){ // checks if the id is valid
     return res.status(404).send(); // case the id is not valid it sends a 404 with an empty body
   }

@@ -25,6 +25,7 @@
     "validator": "^9.4.1"
   },
   "devDependencies": {
+    "@angular/cli": "^1.7.3",
     "expect": "^22.4.0",
     "mocha": "^5.0.1",
     "nodemon": "^1.17.1",
