@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');   //Mongoose Library
 const validator = require('validator'); //Library for creating custom validators
 const jwt = require('jsonwebtoken');    //JWT Library for generating JSON Web Tokens
-const _ = require('lodash');            // Utility functions for JavaScript
+const _ = require('lodash');            //Utility functions for JavaScript
 const bcrypt = require('bcryptjs');
 
 // ============================  Schema  =======================================
@@ -60,11 +60,11 @@ UserSchema.pre('save', function(next){
 
 
 // ===============================  Instance Methods  ========================================
-// Methods inside the method object are instance methods. Therefore we can access
+// Methods inside the method property are instance methods. Therefore we can access
 // this methods via intances of this model. Instance methods get called by individual
 // documents
 
-// to JSON is a Mongoose Instance Method whose return value is used in
+// toJSON is a Mongoose Instance Method whose return value is used in
 // calls to JSON.stringify(document). The idea here is to overwrite this method
 // so we send only the _id and email properties back to the client
 UserSchema.methods.toJSON = function(){
@@ -78,7 +78,7 @@ UserSchema.methods.toJSON = function(){
 UserSchema.methods.generateAuthToken = function(){
   let user = this; // refers to the document
   let access = 'auth'; // specifies the type of token
-  let token = jwt.sign({ _id : user._id.toHexString(), access}, 'abc123').toString(); //hashing function. Uses jsonwebtoken library
+  let token = jwt.sign({ _id : user._id.toHexString(), access}, process.env.JWT_SECRET).toString(); //hashing function. Uses jsonwebtoken library
 
   user.tokens = user.tokens.concat([{access, token}]); //pushes the token to the tokens array declared in the schema
 
@@ -105,7 +105,7 @@ UserSchema.statics.findByToken = function(token){
   let decoded; //declares variable
 
   try{
-    decoded = jwt.verify(token, 'abc123'); //verifies the token. case is valid it sets the variable "decoded" with this value
+    decoded = jwt.verify(token, process.env.JWT_SECRET); //verifies the token. case is valid it sets the variable "decoded" with this value
   }catch(e){
     return Promise.reject(); // throws error in case the token is invalid
   }

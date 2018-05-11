@@ -1,12 +1,11 @@
 const mongoose = require('mongoose');
+require('../config/config');
 
 //We are setting mongoose to use promises
 mongoose.Promise = global.Promise;
 
 //Database connection
-const domainName = 'localhost:27017';
-const dbname = 'MacroFitDB';
-const uri = process.env.MONGODB_URI || `mongodb://${domainName}/${dbname}`;
+const uri = process.env.MONGODB_URI;
 
 mongoose.connect(uri);
 

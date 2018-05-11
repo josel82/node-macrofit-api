@@ -12,6 +12,10 @@ const {ObjectID} = require('mongodb');
 const {mongoose} = require('./db/mongoose');
 
 
+//========================================= MODULES =============================================
+
+require('./config/config');
+
 //========================================== MODELS =============================================
 
 const {Entry} = require('./models/entry');
@@ -20,7 +24,7 @@ const {User} = require('./models/user');
 
 //======================================== VARIABLES ============================================
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT;
 
 const app = express(); //Express App instance
 
